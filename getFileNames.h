@@ -7,10 +7,10 @@ void recursiveDir(char* filepath);
 void dirSingleFile(char* filepath);
 
 //Poziva se ako ima '?' ili '*' zato sto mi je mrsko bilo da napravim unutar obicne funkcije
-void handlePattern(char* pattern);
+void handlePattern(char* filepath);
 
-//Vraca NULL-terminirani niz naziva fajlova
-char** compressingFileNames(int argc,char** argv);
+//Vraca NULL-terminirani niz naziva fajlova,i mijenja pokazivac fileNumber da vrati broj fajlova
+char** compressingFileNames(int argc,char** argv,int* fileNumber);
 
 //Oslobadja dinamicki alociran prostor za cuvanje naziva fajlova
 void freeFileNames();

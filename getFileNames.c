@@ -1,6 +1,5 @@
-#ifndef _WINDOWS_
-	#include <windows.h>
-#endif
+#include <windows.h>
+#include <string.h>
 
 static char** fileNames;
 static int fileCount;
@@ -26,7 +25,7 @@ void recursiveDir(char* filepath){
 			}
 			else{
 				fileNames = (char**)realloc(fileNames,(fileCount+2)*sizeof(char*));
-				int pathSize = strlen(buffer)-1;
+				int pathSize = strlen(buffer+2)+1;
 				fileNames[fileCount] = (char*)malloc(pathSize * sizeof(char));
 				fileNames[fileCount + 1] = NULL;
 				strcpy(fileNames[fileCount],buffer+2);
@@ -41,32 +40,46 @@ void recursiveDir(char* filepath){
 
 void dirSingleFile(char* filepath){
 	fileNames = (char**)realloc(fileNames,(fileCount+2)*sizeof(char*));
-	int pathSize = strlen(filepath);
+	int pathSize = strlen(filepath)+1;
 	fileNames[fileCount] = (char*)malloc(pathSize * sizeof(char));
 	fileNames[fileCount + 1] = NULL;
 	strcpy(fileNames[fileCount],filepath);
 	fileCount++;
 }
 
-void handlePattern(char* pattern) {
+void handlePattern(char* filepath) {
     WIN32_FIND_DATA data;
-    HANDLE hFind = FindFirstFileA(pattern, &data);
+    HANDLE hFind = FindFirstFileA(filepath, &data);
 
     if (hFind == INVALID_HANDLE_VALUE) return;
 
+	char directory[1024] = {0};
+	strcpy(directory,filepath);
+	char* lastSlash = strrchr(directory,'\\');
+	if(lastSlash) *(lastSlash + 1) = '\0';
+	else directory[0] = '\0';
+	
+	
     do {
         if (strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0)
             continue;
+            
+        char fullPath[1024];    
 
-        
-        dirSingleFile(data.cFileName);
+        if(directory[0]!='\0'){
+        	strcpy(fullPath,directory);
+        	strcat(fullPath,data.cFileName);
+		}
+		else strcpy(fullPath,data.cFileName);
+		
+		dirSingleFile(fullPath);
 
     } while (FindNextFileA(hFind, &data));
 
     FindClose(hFind);
 }
 
-char** compressingFileNames(int argc,char** argv){
+char** compressingFileNames(int argc,char** argv,int* fileNumber){
 	fileNames = (char**)malloc(sizeof(char*));
 	fileNames[0] = NULL;
 	fileCount = 0;
@@ -75,6 +88,7 @@ char** compressingFileNames(int argc,char** argv){
 		recursiveDir(".");
 	}
 	for(int i=1;i<argc;i++){
+		for(char* p = &argv[i][0];*p != '\0';p++)if(*p == '/')*p = '\\';
 		if(strchr(argv[i], '*') || strchr(argv[i], '?')){
 			handlePattern(argv[i]);
 			continue;
@@ -88,7 +102,7 @@ char** compressingFileNames(int argc,char** argv){
 			else{ 
 				dirSingleFile(argv[i]);
 			}
-			break;
+			continue;
 		}
 		char filename[1024] = {'.','\\',0};
 		strcat(filename,argv[i]);
@@ -102,6 +116,7 @@ char** compressingFileNames(int argc,char** argv){
 		}
 		
 	}
+	*fileNumber = fileCount;
 	return fileNames;
 }
 
