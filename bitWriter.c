@@ -80,7 +80,7 @@ void writeBitsToFile(bitWriter* savedBits,char* fileName){
     FILE* filePointer = fopen(fileName,"w");
     fwrite(&savedBits->currentByteSize,sizeof(unsigned char),1,filePointer);   // Prvi bajt ce biti broj bitova koji ostaju u trenutnom bufferu
     fwrite(savedBits->array,sizeof(unsigned char),savedBits->currentIndex,filePointer);//Upisuje ostale bitove
-    fwrite(&savedBits->bitBuffer,sizeof(unsigned char),1,filePointer);
+    if(savedBits->currentByteSize != 0)fwrite(&savedBits->bitBuffer,sizeof(unsigned char),1,filePointer);
     fclose(filePointer);
 }
 
