@@ -1,100 +1,97 @@
-#include <windows.h>
-#include <string.h>
-
-static char** fileNames;
+static wchar_t** fileNames;
 static int fileCount;
 
-void recursiveDir(char* filepath){
-	WIN32_FIND_DATA data;
-	char buffer[1024];
-	strcpy(buffer,filepath);
-	strcat(buffer,"\\*");
-    HANDLE hFind = FindFirstFileA(buffer, &data);
+void recursiveDir(wchar_t* filepath){
+	WIN32_FIND_DATAW data;
+	wchar_t buffer[1024];
+	wcscpy(buffer,filepath);
+	wcscat(buffer,L"\\*");
+    HANDLE hFind = FindFirstFileW(buffer, &data);
 
     if ( hFind != INVALID_HANDLE_VALUE ) {
         do {
-        	if(strcmp(data.cFileName,".")==0 || strcmp(data.cFileName,"..")==0)continue;
+        	if(wcscmp(data.cFileName,L".")==0 || wcscmp(data.cFileName,L"..")==0)continue;
         	
             
-            strcpy(buffer,filepath);
-			strcat(buffer,"\\"); 
-			strcat(buffer,data.cFileName);
+            wcscpy(buffer,filepath);
+			wcscat(buffer,L"\\"); 
+			wcscat(buffer,data.cFileName);
 			            
             if(data.dwFileAttributes != INVALID_FILE_ATTRIBUTES && (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)){ 
 				recursiveDir(buffer); 
 			}
 			else{
-				fileNames = (char**)realloc(fileNames,(fileCount+2)*sizeof(char*));
-				int pathSize = strlen(buffer+2)+1;
-				fileNames[fileCount] = (char*)malloc(pathSize * sizeof(char));
+				fileNames = (wchar_t**)realloc(fileNames,(fileCount+2)*sizeof(wchar_t*));
+				int pathSize = wcslen(buffer+2)+1;
+				fileNames[fileCount] = (wchar_t*)malloc(pathSize * sizeof(wchar_t));
 				fileNames[fileCount + 1] = NULL;
-				strcpy(fileNames[fileCount],buffer+2);
+				wcscpy(fileNames[fileCount],buffer+2);
 				fileCount++;
 			}
             
-        } while (FindNextFile(hFind, &data));
+        } while (FindNextFileW(hFind, &data));
         FindClose(hFind);
     }
 	
 }
 
-void dirSingleFile(char* filepath){
-	fileNames = (char**)realloc(fileNames,(fileCount+2)*sizeof(char*));
-	int pathSize = strlen(filepath)+1;
-	fileNames[fileCount] = (char*)malloc(pathSize * sizeof(char));
+void dirSingleFile(wchar_t* filepath){
+	fileNames = (wchar_t**)realloc(fileNames,(fileCount+2)*sizeof(wchar_t*));
+	int pathSize = wcslen(filepath)+1;
+	fileNames[fileCount] = (wchar_t*)malloc(pathSize * sizeof(wchar_t));
 	fileNames[fileCount + 1] = NULL;
-	strcpy(fileNames[fileCount],filepath);
+	wcscpy(fileNames[fileCount],filepath);
 	fileCount++;
 }
 
-void handlePattern(char* filepath) {
-    WIN32_FIND_DATA data;
-    HANDLE hFind = FindFirstFileA(filepath, &data);
+void handlePattern(wchar_t* filepath) {
+    WIN32_FIND_DATAW data;
+    HANDLE hFind = FindFirstFileW(filepath, &data);
 
     if (hFind == INVALID_HANDLE_VALUE) return;
 
-	char directory[1024] = {0};
-	strcpy(directory,filepath);
-	char* lastSlash = strrchr(directory,'\\');
-	if(lastSlash) *(lastSlash + 1) = '\0';
-	else directory[0] = '\0';
+	wchar_t directory[1024] = {0};
+	wcscpy(directory,filepath);
+	wchar_t* lastSlash = wcsrchr(directory,L'\\');
+	if(lastSlash) *(lastSlash + 1) = L'\0';
+	else directory[0] = L'\0';
 	
 	
     do {
-        if (strcmp(data.cFileName, ".") == 0 || strcmp(data.cFileName, "..") == 0)
+        if (wcscmp(data.cFileName, L".") == 0 || wcscmp(data.cFileName, L"..") == 0)
             continue;
             
-        char fullPath[1024];    
+        wchar_t fullPath[1024];    
 
-        if(directory[0]!='\0'){
-        	strcpy(fullPath,directory);
-        	strcat(fullPath,data.cFileName);
+        if(directory[0]!=L'\0'){
+        	wcscpy(fullPath,directory);
+        	wcscat(fullPath,data.cFileName);
 		}
-		else strcpy(fullPath,data.cFileName);
+		else wcscpy(fullPath,data.cFileName);
 		
 		dirSingleFile(fullPath);
 
-    } while (FindNextFileA(hFind, &data));
+    } while (FindNextFileW(hFind, &data));
 
     FindClose(hFind);
 }
 
-char** compressingFileNames(int argc,char** argv,int* fileNumber){
-	fileNames = (char**)malloc(sizeof(char*));
+wchar_t** compressingFileNames(int argc,wchar_t** argv,int* fileNumber){
+	fileNames = (wchar_t**)malloc(sizeof(wchar_t*));
 	fileNames[0] = NULL;
 	fileCount = 0;
 	
 	if(argc == 1){
-		recursiveDir(".");
+		recursiveDir(L".");
 	}
 	for(int i=1;i<argc;i++){
-		for(char* p = &argv[i][0];*p != '\0';p++)if(*p == '/')*p = '\\';
-		if(strchr(argv[i], '*') || strchr(argv[i], '?')){
+		for(wchar_t* p = &argv[i][0];*p != L'\0';p++)if(*p == L'/')*p = L'\\';
+		if(wcschr(argv[i], L'*') || wcschr(argv[i], L'?')){
 			handlePattern(argv[i]);
 			continue;
 		}
-		if(argv[i][1]==':' || (argv[i][0]=='\\' && argv[i][1]=='\\') || (argv[i][0]=='.' && argv[i][1]=='\\')){//Apsolutna lokacija
-			DWORD attribute = GetFileAttributes(argv[i]);
+		if(argv[i][1]==L':' || (argv[i][0]==L'\\' && argv[i][1]==L'\\') || (argv[i][0]==L'.' && argv[i][1]==L'\\')){//Apsolutna lokacija
+			DWORD attribute = GetFileAttributesW(argv[i]);
 			if(attribute==INVALID_FILE_ATTRIBUTES)continue;
 			if(attribute & FILE_ATTRIBUTE_DIRECTORY){ 
 				recursiveDir(argv[i]); 
@@ -104,9 +101,9 @@ char** compressingFileNames(int argc,char** argv,int* fileNumber){
 			}
 			continue;
 		}
-		char filename[1024] = {'.','\\',0};
-		strcat(filename,argv[i]);
-		DWORD attribute = GetFileAttributes(filename);
+		wchar_t filename[1024] = {L'.',L'\\',0};
+		wcscat(filename,argv[i]);
+		DWORD attribute = GetFileAttributesW(filename);
 		if(attribute==INVALID_FILE_ATTRIBUTES)continue; 
 		if(attribute & FILE_ATTRIBUTE_DIRECTORY){ 
 			recursiveDir(filename); 
@@ -118,6 +115,18 @@ char** compressingFileNames(int argc,char** argv,int* fileNumber){
 	}
 	*fileNumber = fileCount;
 	return fileNames;
+}
+
+void writeToFile(wchar_t *fileName,wchar_t **fileNamesArray,int fileCount){
+	FILE* filePointer = _wfopen(fileName,L"w+,ccs=UTF-8");
+	wchar_t krajJednogFajla = L';';
+	for(int i=0;i<fileCount;i++){
+		fputws(fileNamesArray[i],filePointer);
+		if(i!=fileCount)fputwc(krajJednogFajla,filePointer);
+	}
+	krajJednogFajla = L'\0';
+	fputwc(krajJednogFajla,filePointer);
+	fclose(filePointer);
 }
 
 void freeFileNames(){
