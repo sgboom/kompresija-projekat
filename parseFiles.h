@@ -4,7 +4,7 @@
 #include <windows.h>
 
 #include "getFileNames.c"
-//#include "createFileNames.c" -- TODO
+#include "createFileNames.c"
 
 //Poziva se u slucaju foldera i ako se pronadje jos jedan folder rekurzivno poziva i na tom folderu
 void recursiveDir(wchar_t* filepath);
@@ -22,4 +22,7 @@ wchar_t** compressingFileNames(int argc,wchar_t** argv,int* fileNumber);
 void freeFileNames();
 
 //Ucitava fajlove unutar "fileNamesArray" kojih ima "fileCount" u fajl cije je ime "fileName"
-void writeToFile(wchar_t *fileName,wchar_t **fileNamesArray,int fileCount);
+void writeToFile(wchar_t *fileName,wchar_t **fileNamesArray);
+
+//Iz zadatog fajla predhodno kompresovanog, pravi predhodnu strukturu fajlova
+void createFiles(wchar_t *fileName,wchar_t *folderName);
