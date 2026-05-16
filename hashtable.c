@@ -1,16 +1,35 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<string.h>
-#define length 10
-typedef struct Node{
+//#include<string.h>
+#define length 4096
+typedef struct Node {
     struct Node *next;
-    unsigned int key;
-    char* value;
+    unsigned short int prefix_code;
+    char *character;
 }Node;
-typedef struct{
-      Node *hash[length];
-}hashtable;
-unsigned int hashFunc(char* str) {
+typedef struct {
+    Node *niz[length];
+}HashTable;
+unsigned int hashFunc(char* str);
+void INSERT(HashTable *ht,unsigned short int prefix_code,char *string) {
+    unsigned short int indeks=hashFunc(string)%length;
+    Node *temp=ht->niz[indeks];
+    if (temp==NULL) {
+        ht->niz[indeks]=(malloc(sizeof(Node))) ;
+        ht->niz[indeks]->next=NULL;
+        ht->niz[indeks]->prefix_code=prefix_code;
+        ht->niz[indeks]->character=string;
+        return;
+    }
+    while(temp->next!=NULL) {
+        temp=temp->next;
+    }
+    temp->next=(malloc(sizeof(Node)));
+    temp->next->next=NULL;
+    temp->next->prefix_code=prefix_code;
+    temp->next->character=string;
+}
+unsigned int hashFunc(char *str) {
     unsigned int hash=0;
     while (*str!='\0') {
         hash+=*str;
@@ -23,72 +42,33 @@ unsigned int hashFunc(char* str) {
     hash+=hash<<15;
     return hash;
 }
-void insert(char* string,hashtable* hash) {
-    int indeks=hashFunc(string)%length;
-    printf("indeks=%d\n",indeks);
-     Node *temp=hash->hash[indeks];
-    if (temp==NULL) {
-        hash->hash[indeks]=malloc(sizeof(Node));
-        hash->hash[indeks]->key=hashFunc(string);
-        hash->hash[indeks]->value=string;
-        hash->hash[indeks]->next=NULL;
-        return;
-    }
-    while (temp->next!=NULL) {
-        temp=temp->next;
-    }
-    temp->next=malloc(sizeof(Node));
-    temp->next->next=NULL;
-    temp->next->value=string;
-    temp->next->key=hashFunc(string);
-}
-char* find(char* string,hashtable* hash) {
-    int strHash=hashFunc(string);
-    int indeks=strHash%length;
-    Node *temp=hash->hash[indeks];
-    while (temp->next!=NULL) {
-        if (strHash==temp->key) {
-            return temp->value;
+unsigned short int FIND_CODE(HashTable ht,char *string) {
+    unsigned short int indeks=hashFunc(string)%length;
+    Node *temp=ht.niz[indeks];
+    while(temp!=NULL) {
+        if (temp->character==string) {
+            return temp->prefix_code;
         }
         temp=temp->next;
     }
-    return NULL;
-
+    return -1;
 }
-void delete(Node* head){
-    while (head!=NULL) {
-        Node *temp=head;
-        head=head->next;
-        free(temp);
-    }
-}
-void freehashtable(hashtable* hash) {
-    for (int i=0;i<length;i++) {
-        if (hash->hash[i]!=NULL) {
-            delete(hash->hash[i]);
-        }
-    }
-}
-hashtable* inithashtable() {
-    hashtable* hash=(hashtable*)calloc(1,sizeof(hashtable));
+HashTable* InitHasTable() {
+    HashTable* hash=(HashTable*)calloc(1,sizeof(HashTable));
     return hash;
 }
-void printhashtable(hashtable* hash) {
-    for (int i=0;i<length;i++) {
-        Node *temp=hash->hash[i];
-        if (temp!=NULL) {
-            printf("%d=%s\n",hash->hash[i]->key,hash->hash[i]->value);
-            while (temp->next!=NULL) {
-                printf("%d=%s\n",hash->hash[i]->key,hash->hash[i]->value);
-                temp=temp->next;
-            }
+void FreeHashTable(HashTable *ht) {
+    for (unsigned short int i=0;i<length;i++) {
+        Node *temp=ht->niz[i];
+        while (temp!=NULL) {
+            Node *next=temp->next;
+            free(temp);
+            temp=next;
         }
+        ht->niz[i]=NULL;
     }
+    free(ht);
 }
 int main() {
-    hashtable* hash=inithashtable();
-    char str[] = "Hello World!";
-    insert(str,hash);
-    insert("ganci",hash);
-    printhashtable(hash);
+
 }
