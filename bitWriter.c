@@ -21,33 +21,44 @@ bitWriter* initBitWriter(char* bitFileName,unsigned int bufferSize){
 
 void addBits(bitWriter* savedBits,unsigned short bits,int numberOfBits){
     if (numberOfBits <= 0 || numberOfBits > 16) return;
-    bits &= (1 << numberOfBits) - 1; // dodatna provjera da osigura da gledamo samo nizih "numberOfBits"
-
-    if(savedBits->currentIndex == savedBits->maxSize){
-    	fwrite(savedBits->fileBuffer,1,savedBits->maxSize,savedBits->filePointer);
+    bits &= (1 << numberOfBits) - 1; // dodatna provjera da osigura da gledamo samo nizih "numberOfBits"s
+    
+    if(savedBits->currentIndex >= savedBits->maxSize - 2){
+    	fwrite(savedBits->fileBuffer,1,savedBits->currentIndex,savedBits->filePointer);
     	savedBits->currentIndex = 0;
 	}
-	
-	if(savedBits->currentByteSize + numberOfBits > 8){
-		int brojDostupnihBitova = 8 - savedBits->currentByteSize;
-		savedBits->fileBuffer[savedBits->currentIndex++] = (savedBits->bitBuffer << brojDostupnihBitova) | (bits >> (numberOfBits - brojDostupnihBitova));
-		savedBits->bitBuffer = '\0';
-		numberOfBits -= brojDostupnihBitova;
-		addBits(savedBits,bits,numberOfBits);
-		return;
+
+    int brojDostupnihBitova = 8 - savedBits->currentByteSize;
+    
+    if(brojDostupnihBitova >= numberOfBits){
+    	savedBits->bitBuffer = (savedBits->bitBuffer << numberOfBits) | bits;
+    	savedBits->currentByteSize += numberOfBits;
+    	
+    	if(savedBits->currentByteSize == 8){
+    		savedBits->fileBuffer[savedBits->currentIndex++] = savedBits->bitBuffer;
+    		savedBits->bitBuffer = '\0';
+    		savedBits->currentByteSize = 0;
+		}
+    	return;
 	}
 	
-	if(savedBits->currentByteSize + numberOfBits <= 8){
-		savedBits->bitBuffer = (savedBits->bitBuffer << numberOfBits) | bits;
-		savedBits->currentByteSize += numberOfBits;
-		numberOfBits = 0;
-	}
+	savedBits->bitBuffer = (savedBits->bitBuffer << brojDostupnihBitova) | (bits >> (numberOfBits - brojDostupnihBitova));
+	savedBits->fileBuffer[savedBits->currentIndex++] = savedBits->bitBuffer;
+	savedBits->currentByteSize = 0;
+	savedBits->bitBuffer = '\0';
+	numberOfBits -= brojDostupnihBitova;
+	bits &= (1 << numberOfBits) - 1;
 	
-	if(savedBits->currentByteSize == 8){
-		savedBits->fileBuffer[savedBits->currentIndex++] = savedBits->bitBuffer;
-		savedBits->bitBuffer = '\0';
-		savedBits->currentByteSize = 0;
-		return;
+	if(numberOfBits >= 8){
+		brojDostupnihBitova = numberOfBits - 8;
+		savedBits->fileBuffer[savedBits->currentIndex++] = bits >> brojDostupnihBitova;
+		bits &= (1 << brojDostupnihBitova) - 1;
+		savedBits->bitBuffer = bits;
+		savedBits->currentByteSize = brojDostupnihBitova;
+	}
+	else{
+		savedBits->bitBuffer = bits;
+		savedBits->currentByteSize = numberOfBits;
 	}
 }
 
