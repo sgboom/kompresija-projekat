@@ -64,7 +64,7 @@ void addBits(bitWriter* savedBits,unsigned short bits,int numberOfBits){
 
 void closeBitWriter(bitWriter* savedBits){
     fwrite(savedBits->fileBuffer,1,savedBits->currentIndex,savedBits->filePointer);
-    savedBits->bitBuffer <<= (8 - savedBits->currentByteSize);
+    //savedBits->bitBuffer <<= (7 - savedBits->currentByteSize);
     fputc(savedBits->bitBuffer,savedBits->filePointer);
     fseek(savedBits->filePointer,0,SEEK_SET);
     fputc(savedBits->currentByteSize,savedBits->filePointer);
@@ -75,4 +75,3 @@ void freeBitWriter(bitWriter* savedBits){
 	free(savedBits->fileBuffer);
 	free(savedBits);
 }
-

@@ -22,13 +22,9 @@ bitReader* initBitReader(char* bitFileName,unsigned int bufferSize){
 		fclose(result->filePointer);
 		return NULL;  //fajl je prazan
 	}
-    result->lastByte_bitCount = result->fileBuffer[0];
+    result->lastByte_bitCount = result->fileBuffer[0]; // Samo najnizih 3 bita ce sadrzati broj bitova
     result->currentIndex = 1;
     result->currentByteSize = 0;
-    
-    
-    
-    
     
     return result;
 }
@@ -48,7 +44,7 @@ int getBit(bitReader* savedBits){
 		if(savedBits->currentIndex == savedBits->currentSize - 1 && (feof(savedBits->filePointer) || (savedBits->currentSize < savedBits->maxBufferSize))){
 			if(savedBits->lastByte_bitCount == 0)return -1;
 			savedBits->currentByteSize = savedBits->lastByte_bitCount;
-			savedBits->bitBuffer <<= (8-savedBits->lastByte_bitCount);
+			//savedBits->bitBuffer <<= (8-savedBits->lastByte_bitCount);
 		}
 		else savedBits->currentByteSize = 8;
 		
