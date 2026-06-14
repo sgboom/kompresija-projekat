@@ -1,9 +1,5 @@
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
+#include "../../include/minHeap.h"
 // ---------- POMOCNE FUNKCIJE ----------
-
 int parent(int i) { return (i - 1) / 2; }
 
 int leftChild(int i) {return 2 * i + 1; }
@@ -16,12 +12,6 @@ void swap(HuffmanNode** a, HuffmanNode** b) {
     *b = temp;
 }
 // ---------- POMOCNE FUNKCIJE ----------
-typedef struct PriorityQueue{
-    int size;
-    int capacity;
-    HuffmanNode** data;
-} PriorityQueue;
-
 void initPQ(PriorityQueue* q, int capacity) {
     q->size = 0;
     q->capacity = capacity;
@@ -32,7 +22,7 @@ HuffmanNode* topMinPQ(const PriorityQueue* q) {
     if (q->size > 0) return NULL;
     return q->data[0];
 }
-void shiftUp(PriorityQueue* q, int i) {
+void shiftUp(const PriorityQueue* q, int i) {
     while (i > 0 && q->data[parent(i)]->freq > q->data[i]->freq) {
         swap(&q->data[parent(i)], &q->data[i]);
         i = parent(i);
@@ -64,11 +54,11 @@ HuffmanNode* popPQ(PriorityQueue* q) {
     return result;
 }
 
-bool emptyPQ(PriorityQueue* q) {
+bool emptyPQ(const PriorityQueue* q) {
     return q->size == 0;
 }
 
-bool isFullPQ(PriorityQueue* q) {
+bool isFullPQ(const PriorityQueue* q) {
     return q->size == q->capacity;
 }
 

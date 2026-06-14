@@ -5,11 +5,29 @@
 #ifndef BITFILE_H
 #define BITFILE_H
 
-#include "bitWriter.c"
-#include "bitReader.c"
+typedef struct{
+    unsigned char* fileBuffer;
+    unsigned int maxBufferSize;
+    FILE* filePointer;
+    int currentSize;
+    int currentIndex;
+    unsigned char bitBuffer;
+    unsigned char currentByteSize;
+    unsigned char lastByte_bitCount;
+} bitReader;
+
+typedef struct{
+    unsigned char* fileBuffer;
+    int maxSize;
+    int currentIndex;
+    unsigned char bitBuffer;
+    unsigned char currentByteSize;
+    long headerOffset;
+    FILE* filePointer;
+} bitWriter;
 
 //Inicijalizuje niz bitova za zapisivanje
-bitWriter* initBitWriter(char* bitFileName,unsigned int bufferSize);
+bitWriter* initBitWriter(FILE* bitFile,unsigned int bufferSize);
 
 //Dodaje "numberOfBits" bitova unutar promjenjive "bits"
 void addBits(bitWriter* savedBits,unsigned short bits,int numberOfBits);
@@ -21,7 +39,7 @@ void closeBitWriter(bitWriter* savedBits);
 void freeBitWriter(bitWriter* savedBits);
 
 //Inicijalizuje niz bitova za citanje
-bitReader* initBitReader(char* bitFileName,unsigned int bufferSize);
+bitReader* initBitReader(FILE* bitFile,unsigned int bufferSize);
 
 //Ako nije kraj niza vraca sledeci bit (0/1), vraca 255 ako je dostignut kraj upisanog niza
 int getBit(bitReader* savedBits);
