@@ -2,10 +2,6 @@
 #include <wchar.h>
 #include "../include/parseFiles.h"
 int main() {
-	/*wchar_t fileName[] = L"test.txt";
-	adaptiveDecompressFile(L"HaffmanEnkodovano.txt",L"HaffmanDekodovano.txt");
-	LZW_DECODE(L"HaffmanDekodovano.txt",L"LZW.txt");*/
-	
 	char method = 'n';	// 'c' za kompresovanje i 'd' za dekompresovanje
 	wchar_t *outputFile;
 	int argc;
@@ -30,12 +26,9 @@ int main() {
 			}
 			if(argv[i][1]==L'l')printf("Mrzim logovanje!");
 			if(argv[i][1]==L'd'){
-				//printf("Dekompresovanje\n");
 				method = 'd';
 			}
 			if(argv[i][1]==L'c'){
-				//printf("Kompresovanje\n");
-				//for(int j=1;j<argc;j++)wprintf(L"%d:%ls\n",j,argv[j]);
 				method = 'c';
 			}
 			if(argv[i][1]==L'o'){
@@ -52,7 +45,7 @@ int main() {
 		}
 	}
 	if(method == 'n'){
-		printf("Error: Nije izabrana kompresija/dekompresija");
+		printf("Error: Nije izabrana akcija!");
 		return 0;
 	}
 	if(method == 'c'){
@@ -60,7 +53,6 @@ int main() {
 		int fileNumber;
     	wchar_t** fileNames = compressingFileNames(argc,argv,&fileNumber);
 		writeToFile(outputFile,fileNames);
-		//printf("%d",fileNumber);
 		freeFileNames();
 	}
 	if(method == 'd'){
@@ -68,7 +60,6 @@ int main() {
 			if(argv[i][0]==L'\0' || argv[i][0]==L'-')continue;
 			createFiles(argv[i],outputFile);
 		}
-
 	}
 	free(outputFile);
 

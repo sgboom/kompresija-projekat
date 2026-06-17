@@ -60,9 +60,7 @@ short int FIND_CODE(const HashTable *ht, short int prefix_code, char character) 
 short int Add_Chars(HashTable *ht) {
     short int code = 0;
     for (unsigned short int i = 0; i < 256; i++) {
-        //if ((FIND_CODE(ht, 0, ((char)i))) == -1) {
-            INSERT(ht, -1, ((char)i), code++);
-        //}
+        INSERT(ht, -1, ((char)i), code++);
     }
     return code;
 }
@@ -92,7 +90,6 @@ int LZW_Encode(const wchar_t* filenameIn,const wchar_t* filenameOut) {
             prefix = temp;
         }
         else {
-            //WriteBits(f,code_length,prefix);
             addBits(writer,prefix,code_length);
             if ((1<<code_length)==code) code_length++;
             if (code!=TABLE_SIZE-1) {
@@ -103,8 +100,6 @@ int LZW_Encode(const wchar_t* filenameIn,const wchar_t* filenameOut) {
     }
     if (prefix != -1) {
         addBits(writer,prefix,code_length);
-		//printf("%hd ", prefix);
-        //WriteBits(f,code_length,prefix);
     }
     closeBitWriter(writer);
     freeBitWriter(writer);

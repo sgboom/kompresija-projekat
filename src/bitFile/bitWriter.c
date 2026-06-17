@@ -64,7 +64,6 @@ void closeBitWriter(bitWriter* savedBits){
 	fputc(savedBits->currentByteSize, savedBits->filePointer);
 }
 
-
 void freeBitWriter(bitWriter* savedBits){
 	fclose(savedBits->filePointer);
 	free(savedBits->fileBuffer);

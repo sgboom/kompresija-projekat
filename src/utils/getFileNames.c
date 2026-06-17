@@ -14,7 +14,6 @@ void dirSingleFile(wchar_t* filepath){
 	totalFilenameCharacters += WideCharToMultiByte(CP_UTF8,0,filepath,-1,NULL,0,NULL,NULL);
 	fileNames[fileCount-1] = (wchar_t*)malloc(pathSize * sizeof(wchar_t));
 	wcscpy(fileNames[fileCount-1],filepath);
-	//wprintf(L"%ls\n",fileNames[fileCount-1]);
 }
 
 //Mozda dodati maksimalnu rekurziju da ne bi pao sistem?
@@ -28,7 +27,6 @@ void recursiveDir(wchar_t* filepath){
 		buffer[filepathSize+1] = L'\0';
 	}
 	wcscat(buffer,L"*");
-	//wprintf(L"%ls\n",buffer);
 	
     HANDLE hFind = FindFirstFileW(buffer, &data);
 	
@@ -104,17 +102,6 @@ wchar_t** compressingFileNames(int argc,wchar_t** argv,int* fileNumber){
 			handlePattern(argv[i]);
 			continue;
 		}
-		/*if(argv[i][1]==L':' || (argv[i][0]==L'\\' && argv[i][1]==L'\\') || (argv[i][0]==L'.' && argv[i][1]==L'\\')){//Apsolutna lokacija (bez njih pliz)
-			DWORD attribute = GetFileAttributesW(argv[i]);
-			if(attribute==INVALID_FILE_ATTRIBUTES)continue;
-			if(attribute & FILE_ATTRIBUTE_DIRECTORY){ 
-				recursiveDir(argv[i]); 
-			} 
-			else{ 
-				dirSingleFile(argv[i]);
-			}
-			continue;
-		}*/
 		wchar_t filename[1024];
 		wcscat(filename,argv[i]);
 		DWORD attribute = GetFileAttributesW(filename);
@@ -139,8 +126,6 @@ wchar_t** compressingFileNames(int argc,wchar_t** argv,int* fileNumber){
 void writeToFile(wchar_t *fileName,wchar_t **fileNamesArray){
 	FILE* filePointer = _wfopen(fileName,L"wb+");
 	fwrite(&totalFilenameCharacters, sizeof(totalFilenameCharacters), 1, filePointer);
-	printf("%u",totalFilenameCharacters);
-	//fclose(filePointer);
 	char buffer[1024];
 	for(int i=0;i<fileCount;i++){
 		int size = WideCharToMultiByte(CP_UTF8,0,fileNamesArray[i],-1,buffer,1024,NULL,NULL);
@@ -152,7 +137,6 @@ void writeToFile(wchar_t *fileName,wchar_t **fileNamesArray){
 	unsigned char fileBuffer[65536];
 	for(int i=0;i<fileCount;i++){
 		if(wcscmp(fileNamesArray[i],fileName)==0)continue;
-		//wprintf(L"%ls\n",fileNamesArray[i]);
 		if(fileNamesArray[i][wcslen(fileNamesArray[i])-1]==L'\\')continue;
 		
 		GetFileAttributesExW(fileNamesArray[i], GetFileExInfoStandard, &fad);
@@ -183,7 +167,7 @@ void writeToFile(wchar_t *fileName,wchar_t **fileNamesArray){
 		fileSize.QuadPart |= ((unsigned long long)flags) << 61;
 		fwrite(&fileSize.QuadPart,sizeof(fileSize.QuadPart),1,filePointer);
 		fileSize.QuadPart &= ~(7ULL << 61);
-		wprintf(L"%ls:%llu\t|%x|\n",fileNamesArray[i],fileSize.QuadPart,flags);
+		wprintf(L"%ls : %lluB	\tflags=|%x|\n",fileNamesArray[i],fileSize.QuadPart,flags);
 		FILE* secondFile = _wfopen(L"HaffmanEnkodovano.txt", L"rb");
 		if(secondFile == NULL){
 			printf("Greska??\n");
