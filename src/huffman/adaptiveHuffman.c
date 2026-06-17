@@ -108,10 +108,10 @@ void writeNodeCode(bitWriter* writer, AdaptiveHuffmanNode* node) {
     }
 }
 
-void adaptiveCompressFile(const char *inputFilename, const char *outputFilename) {
-    FILE* file = fopen(inputFilename, "rb");
+void adaptiveCompressFile(const wchar_t *inputFilename, const wchar_t *outputFilename) {
+    FILE* file = _wfopen(inputFilename, L"rb");
     if (!file) return;
-    FILE* outFile = fopen(outputFilename, "wb");
+    FILE* outFile = _wfopen(outputFilename, L"wb");
     bitWriter* writer = initBitWriter(outFile, 1024);
     AdaptiveHuffmanHeader h;
     initTree(&h);
@@ -143,8 +143,8 @@ int read8Bits(bitReader *reader) {
     return result;
 }
 
-void adaptiveDecompressFile(const char* compressedFilename, const char* outputFilename) {
-    FILE* binFile = fopen(compressedFilename, "rb");
+void adaptiveDecompressFile(const wchar_t* compressedFilename, const wchar_t* outputFilename) {
+    FILE* binFile = _wfopen(compressedFilename, L"rb");
     if (!binFile) {
         return;
     }
@@ -153,7 +153,7 @@ void adaptiveDecompressFile(const char* compressedFilename, const char* outputFi
         fclose(binFile);
         return;
     }
-    FILE* file = fopen(outputFilename, "wb");
+    FILE* file = _wfopen(outputFilename, L"wb");
     if (!file) {
         fclose(binFile);
         return;

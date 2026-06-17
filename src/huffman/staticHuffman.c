@@ -133,12 +133,13 @@ void freeHuffmanTree(HuffmanNode* root) {
     free(root);
 }
 unsigned long fileByteSize(FILE* inputFile) {
-    unsigned long bytesCount = 0;
-    while (fgetc(inputFile) != EOF) bytesCount++;
+	fseek(inputFile,0,SEEK_END);
+    unsigned long bytesCount = ftell(inputFile);
+    fseek(inputFile,0,SEEK_SET);
     return bytesCount;
 }
-void staticCompressFile(const char* inputFileName, const char* outputFileName) {
-    FILE* inputFile = fopen(inputFileName, "rb");
+void staticCompressFile(const wchar_t* inputFileName, const wchar_t* outputFileName) {
+    FILE* inputFile = _wfopen(inputFileName, L"rb");
     if (!inputFile) { return; }
 
     unsigned int* freqTable = countFrequencies(inputFile);
@@ -152,7 +153,7 @@ void staticCompressFile(const char* inputFileName, const char* outputFileName) {
     }
     char** codes = generateCodes(root);
 
-    FILE* outputFile = fopen(outputFileName, "wb");
+    FILE* outputFile = _wfopen(outputFileName, L"wb");
     if (!outputFile) {
         fclose(inputFile);
         free(freqTable);
@@ -191,8 +192,8 @@ void staticCompressFile(const char* inputFileName, const char* outputFileName) {
     fclose(outputFile);
 }
 
-void staticDecompressFile(const char* compressedFilename, const char* outputFilename) {
-    FILE* file = fopen(compressedFilename, "rb");
+void staticDecompressFile(const wchar_t* compressedFilename, const wchar_t* outputFilename) {
+    FILE* file = _wfopen(compressedFilename, L"rb");
     if (!file) return;
 
     unsigned int freq[ALPHABET_SIZE];
@@ -209,7 +210,7 @@ void staticDecompressFile(const char* compressedFilename, const char* outputFile
         return;
     }
     HuffmanNode* current = root;
-    FILE* writer = fopen(outputFilename, "wb");
+    FILE* writer = _wfopen(outputFilename, L"wb");
     if (!writer) {
         freeBitReader(r);
         freeHuffmanTree(root);

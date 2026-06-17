@@ -1,6 +1,8 @@
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
 
+
+#include <wchar.h>
 #include "huffman_common.h"
 #include "minHeap.h"
 #include "bitFile.h"
@@ -19,8 +21,8 @@ void printHuffmanTreePreorder(HuffmanNode* root);
 void freeHuffmanTree(HuffmanNode* root);
 unsigned long fileByteSize(FILE* inputFile);
 void writeHeader(char* fileName, unsigned int* freq);
-void staticCompressFile(const char* inputFileName, const char* outputFileName);
-void staticDecompressFile(const char* compressedFilename, const char* outputFilename);
+void staticCompressFile(const wchar_t* inputFileName, const wchar_t* outputFileName);
+void staticDecompressFile(const wchar_t* compressedFilename, const wchar_t* outputFilename);
 void testFunkcija();
 
 //dinamicki huffman
@@ -33,9 +35,9 @@ AdaptiveHuffmanNode* findMaxInBlock(const AdaptiveHuffmanHeader* h, const Adapti
 void updateAH(AdaptiveHuffmanHeader* h, int c);
 void writeNodeCode(bitWriter* writer, AdaptiveHuffmanNode* node);
 
-void adaptiveCompressFile(const char *inputFilename, const char *outputFilename);
+void adaptiveCompressFile(const wchar_t *inputFilename, const wchar_t *outputFilename);
 int read8Bits(bitReader *reader);
-void adaptiveDecompressFile(const char* compressedFilename, const char* outputFilename);
+void adaptiveDecompressFile(const wchar_t* compressedFilename, const wchar_t* outputFilename);
 void freeAdaptiveHuffman(AdaptiveHuffmanHeader* h);
 
 #endif

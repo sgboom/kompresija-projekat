@@ -46,6 +46,17 @@ int getBit(bitReader* savedBits){
 	return (savedBits->bitBuffer >> savedBits->currentByteSize) & 1;
 }
 
+unsigned int getBits(bitReader* savedBits,unsigned short count){
+	if(count > 16)return -1;
+	unsigned int rez = 0;
+	for(int i=0;i<count;i++){
+		int a = getBit(savedBits);
+		if(a == -1)return -1;
+		rez = (rez << 1) | a;
+	}
+	return rez;
+}
+
 void freeBitReader(bitReader* savedBits){
 	fclose(savedBits->filePointer);
 	free(savedBits->fileBuffer);

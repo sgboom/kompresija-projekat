@@ -1,5 +1,8 @@
 #include "../../include/parseFiles.h"
-static wchar_t** fileNames;
+#include "../../include/huffman.h"
+#include "../../include/lzw.h"
+
+static wchar_t** fileNames; // TODO: Pretvori u ulancanu listu
 static int fileCount;
 unsigned int totalFilenameCharacters = 0;
 
@@ -151,15 +154,37 @@ void writeToFile(wchar_t *fileName,wchar_t **fileNamesArray){
 		if(wcscmp(fileNamesArray[i],fileName)==0)continue;
 		//wprintf(L"%ls\n",fileNamesArray[i]);
 		if(fileNamesArray[i][wcslen(fileNamesArray[i])-1]==L'\\')continue;
-		if (!GetFileAttributesExW(fileNamesArray[i], GetFileExInfoStandard, &fad)) {
+		
+		GetFileAttributesExW(fileNamesArray[i], GetFileExInfoStandard, &fad);
+		fileSize.LowPart =  fad.nFileSizeLow;
+		fileSize.HighPart = fad.nFileSizeHigh;
+		
+		LARGE_INTEGER compressedFileSize;
+		const wchar_t *currFileName = fileNamesArray[i];
+		char flags = 0x000;
+		if(LZW_Encode(currFileName,L"LZWEnkodovano.txt") == 0){
+			GetFileAttributesExW(L"LZWEnkodovano.txt",GetFileExInfoStandard,&fad);
+			compressedFileSize.LowPart =  fad.nFileSizeLow;
+			compressedFileSize.HighPart = fad.nFileSizeHigh;
+			if(compressedFileSize.QuadPart < fileSize.QuadPart){
+				flags |= 4;
+				currFileName = L"LZWEnkodovano.txt";
+			}
+		}
+		adaptiveCompressFile(currFileName,L"HaffmanEnkodovano.txt");
+		flags |= 1;	// 0b100
+		
+		if (!GetFileAttributesExW(L"HaffmanEnkodovano.txt", GetFileExInfoStandard, &fad)) {
     		wprintf(L"GetFileAttributesExW failed: %ls\n", fileNamesArray[i]);
     		continue;
 		}
 		fileSize.LowPart =  fad.nFileSizeLow;
 		fileSize.HighPart = fad.nFileSizeHigh;
-		wprintf(L"%ls:%llu\n",fileNamesArray[i],fileSize.QuadPart);
+		fileSize.QuadPart |= ((unsigned long long)flags) << 61;
 		fwrite(&fileSize.QuadPart,sizeof(fileSize.QuadPart),1,filePointer);
-		FILE* secondFile = _wfopen(fileNamesArray[i], L"rb");
+		fileSize.QuadPart &= ~(7ULL << 61);
+		wprintf(L"%ls:%llu\t|%x|\n",fileNamesArray[i],fileSize.QuadPart,flags);
+		FILE* secondFile = _wfopen(L"HaffmanEnkodovano.txt", L"rb");
 		if(secondFile == NULL){
 			printf("Greska??\n");
 			continue;
@@ -172,7 +197,8 @@ void writeToFile(wchar_t *fileName,wchar_t **fileNamesArray){
     	
     	fclose(secondFile);
 	}
-	
+	DeleteFile("HaffmanEnkodovano.txt");
+	DeleteFile("LZWEnkodovano.txt");
 	fclose(filePointer);
 }
 

@@ -1,4 +1,6 @@
 #include "../../include/parseFiles.h"
+#include "../../include/huffman.h"
+#include "../../include/lzw.h"
 
 void createFiles(wchar_t *fileName,wchar_t *folderName){
 	CreateDirectoryW(folderName,NULL);
@@ -47,10 +49,14 @@ void createFiles(wchar_t *fileName,wchar_t *folderName){
 			CreateDirectoryW(buffer,NULL);
 			continue;
 		}
-		FILE* secondFile = _wfopen(buffer,L"wb+");
+		
+		FILE* secondFile = _wfopen(L"Enkodovano.txt",L"wb+");
 		static unsigned char fileBuffer[65536 + 1];
 		unsigned long long fileSize;
 		fread(&fileSize,sizeof(unsigned long long),1,fptr);
+		char flags = fileSize >> 61;
+		fileSize &= ~(7ULL << 61);
+		//printf("Flags:%d",flags);
 		while(fileSize > 65536){
 			fread(fileBuffer,1,65536,fptr);
 			fwrite(fileBuffer,1,65536,secondFile);
@@ -61,8 +67,22 @@ void createFiles(wchar_t *fileName,wchar_t *folderName){
 			fwrite(fileBuffer,1,fileSize,secondFile);
 		}
 		fclose(secondFile);
+		
+		if(flags == 5){	//LZW + Dinamicki Huffman
+			adaptiveDecompressFile(L"Enkodovano.txt",L"LZW.txt");
+			LZW_DECODE(L"LZW.txt",buffer);
+		}
+		else if(flags == 1){
+			adaptiveDecompressFile(L"Enkodovano.txt",buffer);
+		}
+		else if (flags == 0){
+			MoveFileExW(L"Enkodovano.txt",buffer,MOVEFILE_COPY_ALLOWED);
+		}
+		
+		//LZW_DECODE(L"HaffmanDekodovano.txt",buffer);
 	}
-	
+	DeleteFile("Enkodovano.txt");
+	DeleteFile("LZW.txt");
 	fclose(fptr);
 	free(fileNamesWideBuffer);
 }

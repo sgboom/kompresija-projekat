@@ -2,6 +2,10 @@
 #include <wchar.h>
 #include "../include/parseFiles.h"
 int main() {
+	/*wchar_t fileName[] = L"test.txt";
+	adaptiveDecompressFile(L"HaffmanEnkodovano.txt",L"HaffmanDekodovano.txt");
+	LZW_DECODE(L"HaffmanDekodovano.txt",L"LZW.txt");*/
+	
 	char method = 'n';	// 'c' za kompresovanje i 'd' za dekompresovanje
 	wchar_t *outputFile;
 	int argc;

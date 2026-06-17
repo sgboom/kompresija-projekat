@@ -44,6 +44,8 @@ bitReader* initBitReader(FILE* bitFile,unsigned int bufferSize);
 //Ako nije kraj niza vraca sledeci bit (0/1), vraca 255 ako je dostignut kraj upisanog niza
 int getBit(bitReader* savedBits);
 
+unsigned int getBits(bitReader* savedBits,unsigned short count);
+
 //Oslobadja dinamicki alociranu memoriju citaca bitova
 void freeBitReader(bitReader* savedBits);
 

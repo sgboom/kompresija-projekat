@@ -1,32 +1,13 @@
-#include  "../../include/lzw.h"
-unsigned long buffer = 0;
-int bit_count = 0;
+#include <stdio.h>
+#include <stdlib.h>
+#include "../../include/lzw.h"
+#include "../../include/bitFile.h"
 
-void WriteBits(FILE *out, short int code_length, short int code) {
-    for ( int i = code_length - 1; i >= 0; i--) {
-        int bit = (code >> i) & 1;
-        buffer = (buffer << 1) | bit;
-        bit_count++;
-        if (bit_count == 8) {
-            fputc((int)buffer, out);
-            bit_count = 0;
-            buffer = 0;
-        }
-    }
-}
-void FlushBits(FILE *out) {
-    if (bit_count>0) {
-        buffer=buffer<<(8-bit_count);
-        fputc((int)buffer, out);
-        bit_count=0;
-        buffer=0;
-    }
-}
 void INSERT(HashTable *ht, short int prefix_code, char character, short int code) {
     if (ht == NULL) {
         return;
     }
-    unsigned int index = (prefix_code * 256 + (unsigned char)character) % length;
+    unsigned int index = (prefix_code * 256 + (unsigned char)character + TABLE_SIZE) % TABLE_SIZE;
     Node *new = malloc(sizeof(Node));
     new->prefix_code = prefix_code;
     new->code = code;
@@ -45,11 +26,27 @@ void INSERT(HashTable *ht, short int prefix_code, char character, short int code
     }
 }
 
+void FreeHashTable(HashTable *ht) {
+    if (ht == NULL) {
+        return;
+    }
+    for (unsigned short int i = 0; i < TABLE_SIZE; i++) {
+        Node *temp = ht->niz[i];
+        while (temp != NULL) {
+            Node *next = temp->next;
+            free(temp);
+            temp = next;
+        }
+        ht->niz[i] = NULL;
+    }
+    free(ht);
+}
+
 short int FIND_CODE(const HashTable *ht, short int prefix_code, char character) {
     if (ht == NULL) {
         exit(-1);
     }
-    unsigned int index = (prefix_code * 256 + (unsigned char)character) % length;
+    unsigned int index = (prefix_code * 256 + (unsigned char)character + TABLE_SIZE) % TABLE_SIZE;
     const Node *temp = ht->niz[index];
     while (temp != NULL) {
         if (temp->prefix_code == prefix_code && temp->character == character) {
@@ -63,43 +60,58 @@ short int FIND_CODE(const HashTable *ht, short int prefix_code, char character) 
 short int Add_Chars(HashTable *ht) {
     short int code = 0;
     for (unsigned short int i = 0; i < 256; i++) {
-        if ((FIND_CODE(ht, 0, ((char)i))) == -1) {
-            INSERT(ht, 0, ((char)i), code++);
-        }
+        //if ((FIND_CODE(ht, 0, ((char)i))) == -1) {
+            INSERT(ht, -1, ((char)i), code++);
+        //}
     }
     return code;
 }
 
-void LZW_Encode(HashTable *ht, char filename[], short int code) {
-    if (ht == NULL || filename == NULL) {
-        return;
+int LZW_Encode(const wchar_t* filenameIn,const wchar_t* filenameOut) {
+	HashTable *ht = InitHashTable();
+    short int code = Add_Chars(ht);
+    
+    if (ht == NULL || filenameIn == NULL || filenameOut == NULL) {
+        return 1;
     }
     short int code_length=8;
-    FILE *f = fopen("coded.txt", "wb");
-    FILE *read=fopen(filename, "r");
+    FILE *f = _wfopen(filenameOut, L"wb");
+    FILE *read=_wfopen(filenameIn, L"rb");
+    
+    bitWriter *writer = initBitWriter(f,1024);
     int c=fgetc(read);
-    short int prefix = FIND_CODE(ht, 0, (char)c);
+    short int prefix = FIND_CODE(ht, -1, (char)c);
+    char ret = 0;
     while ((c=fgetc(read))!=-1) {
+    	if(c == 0){
+    		ret = 1;
+    		break;
+		};
         short int temp = FIND_CODE(ht, prefix, (char)c);
         if (temp != -1) {
             prefix = temp;
         }
         else {
-            WriteBits(f,code_length,prefix);
+            //WriteBits(f,code_length,prefix);
+            addBits(writer,prefix,code_length);
             if ((1<<code_length)==code) code_length++;
-            if (code!=length-1) {
+            if (code!=TABLE_SIZE-1) {
                 INSERT(ht, prefix, (char)c, code++);
             }
-            prefix = FIND_CODE(ht, 0, (char)c);
+            prefix = FIND_CODE(ht, -1, (char)c);
         }
     }
     if (prefix != -1) {
-        //printf("%hd ", prefix);
-        WriteBits(f,code_length,prefix);
+        addBits(writer,prefix,code_length);
+		//printf("%hd ", prefix);
+        //WriteBits(f,code_length,prefix);
     }
-    FlushBits(f);
+    closeBitWriter(writer);
+    freeBitWriter(writer);
+    FreeHashTable(ht);
     fclose(f);
     fclose(read);
+    return ret;
 }
 
 HashTable* InitHashTable() {
@@ -107,18 +119,3 @@ HashTable* InitHashTable() {
     return ht;
 }
 
-void freehashtable(HashTable *ht) {
-    if (ht == NULL) {
-        return;
-    }
-    for (unsigned short int i = 0; i < length; i++) {
-        Node *temp = ht->niz[i];
-        while (temp != NULL) {
-            Node *next = temp->next;
-            free(temp);
-            temp = next;
-        }
-        ht->niz[i] = NULL;
-    }
-    free(ht);
-}
