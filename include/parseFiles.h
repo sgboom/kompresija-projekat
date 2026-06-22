@@ -27,4 +27,5 @@ void writeToFile(wchar_t *fileName,wchar_t **fileNamesArray);
 //Iz zadatog fajla predhodno kompresovanog, pravi predhodnu strukturu fajlova
 void createFiles(wchar_t *fileName,wchar_t *folderName);
 
+void extractFile(wchar_t* fileName,wchar_t* targetFileName);
 #endif

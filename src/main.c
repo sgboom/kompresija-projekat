@@ -15,9 +15,10 @@ int main() {
 				printf("	-h,-?			Ispisuje ovaj meni\n");
 				printf("	-a			Ispisuje osnovne informacije o alatu\n");
 				printf("	-l			Ispisuje korake tokom obavljanja kompresovanja i dekompresovanja\n");
-				printf("	-c			Dekompresuje zadatu datoteku\n");
+				printf("	-c			Kompresuje zadatu datoteku\n");
 				printf("	-d			Dekompresuje zadatu datoteku\n");
 				printf("	-o			Naziv izlaznog fajla\n");
+				printf("	-e			Ekstrakuje fajl iz kompresovane datoteke");
 				printf("Primer:\n\t./NinjaZip.exe -c . -o izlaznifajl.nzip\n\t./NinjaZip.exe -d izlaznifajl.nzip -o odzipovanFolder");
 				return 0;
 			}
@@ -30,6 +31,9 @@ int main() {
 			}
 			if(argv[i][1]==L'c'){
 				method = 'c';
+			}
+			if(argv[i][1]==L'e'){
+				method = 'e';
 			}
 			if(argv[i][1]==L'o'){
 				//printf("Output File\n");
@@ -59,6 +63,12 @@ int main() {
 		for(int i=1;i<argc;i++){
 			if(argv[i][0]==L'\0' || argv[i][0]==L'-')continue;
 			createFiles(argv[i],outputFile);
+		}
+	}
+	if(method == 'e'){
+		for(int i=1;i<argc;i++){
+			if(argv[i][0]==L'\0' || argv[i][0]==L'-')continue;
+			extractFile(argv[i],outputFile);
 		}
 	}
 	free(outputFile);
